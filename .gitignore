@@ -21,3 +21,6 @@ node_modules/
 
 # Ignore macOS specific files
 .DS_Store
+
+#ignore images folder
+BackEnd/static/images/
