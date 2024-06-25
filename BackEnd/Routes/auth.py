@@ -3,7 +3,7 @@ from BackEnd.model import User
 from BackEnd.extensions import db, login_manager, jwt
 from flask_login import login_user, logout_user
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-
+from BackEnd.utilities.thread_management import store_thread, generate_new_thread_id
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/signup', methods=['POST'])
@@ -42,9 +42,11 @@ def login():
     if not user or not user.check_password(password):
         return jsonify({'message': 'Invalid credentials'}), 401
     login_user(user)
+    thread_id=generate_new_thread_id()
+    store_thread(email, thread_id)
     access_token = create_access_token(identity={'password':user.password,'email': user.email})
     return jsonify({'success': True,'access_token': access_token}), 200
-
+    
 @auth_bp.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
