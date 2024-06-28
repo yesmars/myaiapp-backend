@@ -1,6 +1,6 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, url_for
 from flask_jwt_extended import jwt_required, current_user
-import openai,os, glob
+import openai,os, glob, base64, re
 from BackEnd.utilities.thread_management import store_thread, check_if_thread_exists
 from flask import stream_with_context, Response
 from BackEnd.utilities.event_handler import EventHandler
@@ -33,6 +33,7 @@ def vanai():
             print("Received image:", image_path)
 
          # Clean up old images if there are more than 5
+        image_folder = 'BackEnd/static/images'
         clean_image_folder(image_folder) 
         thread_id = check_if_thread_exists(email)
         print(f'thread_id:,{thread_id}')
@@ -46,7 +47,6 @@ def vanai():
         try:
                 def generate():    
                     event_handler = EventHandler()
-                    
                     if image is not None and user_question is None:
                         file = client.files.create(
                         file=open(image_path, "rb"),
@@ -107,8 +107,20 @@ def vanai():
                                 if event.event == "thread.message.delta" and event.data.delta.content:
                                     print(event.data.delta.content[0].text.value, end="", flush=True)
                                     yield (event.data.delta.content[0].text.value)
-                    print(event_handler.full_text)
-                    yield f" {event_handler.full_text}\n\n"            
+                    output_text = event_handler.full_text
+                    print(f"Output text: {output_text}")
+
+                    image_match = re.search(r'!\[.*?\]\((.*?)\)', output_text)
+                    if image_match:
+                         image_filename = image_match.group(1).strip()
+                         image_path = os.path.join('BackEnd/static/images', image_filename)
+                         if os.path.exists(image_path): 
+                            with open(image_path, "rb") as image_file:
+                                encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+                            yield f"data:image/jpeg;base64,{encoded_string}\n\n"
+                    else:
+                        yield f"{output_text}\n\n"
+                             
                 return Response(stream_with_context(generate()), mimetype='text/event-stream')                  
         except Exception as e:  
             # Handle any errors that occur during the API call

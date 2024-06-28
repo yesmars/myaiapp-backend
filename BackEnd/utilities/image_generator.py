@@ -15,10 +15,12 @@ def generate_image(description):
         size="1024x1024",
         quality="standard",
         response_format="b64_json",
-        n=1
+        n=1,
+        style="natural"
     )
     
     image_data=image_response.data[0].b64_json
+    
     image_bytes = base64.b64decode(image_data)
     directory = 'BackEnd/static/images/'
     if not os.path.exists(directory):
@@ -37,7 +39,7 @@ def generate_image(description):
     print(image_path)
     with open(image_path, 'wb') as f:
         f.write(image_bytes)
-    return image_filename
+    return image_path
 
 def clean_image_folder(folder_path, max_images=5):
     """Remove the oldest images if there are more than `max_images` in the folder."""
