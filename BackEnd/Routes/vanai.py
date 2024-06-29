@@ -25,6 +25,7 @@ def vanai():
         if user_question is not None:
             print('there is question')
         image = request.files.get('imageInput')
+ 
         if image:
             image_folder = 'BackEnd/static/images'
         # Process image input
@@ -48,6 +49,8 @@ def vanai():
                 def generate():    
                     event_handler = EventHandler()
                     if image is not None and user_question is None:
+                        image_folder = 'BackEnd/static/images'
+                        image_path = os.path.join(image_folder, image.filename)
                         file = client.files.create(
                         file=open(image_path, "rb"),
                         purpose="vision"
