@@ -34,9 +34,10 @@ def generate_image(description):
         del image_files[0]
     
     # Save the image to a file in the specified directory
-    image_filename = f'output_image_{uuid.uuid4()}.jpg'
+    image_filename = f'{uuid.uuid4()}.jpg'
+    print(f' this is from image generator :{image_filename}')
     image_path = os.path.join(directory, image_filename)
-    print(image_path)
+    print(f' this is from image generator :{image_path}')
     with open(image_path, 'wb') as f:
         f.write(image_bytes)
     return image_path
